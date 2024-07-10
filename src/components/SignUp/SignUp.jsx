@@ -3,9 +3,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/authContext/index";
 import { createEmailandPassword } from "../../firebase/auth";
 
-
 const SignUp = () => {
-
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isRegistering, setIsRegistering] = useState(false);
@@ -23,7 +21,7 @@ const SignUp = () => {
 	};
 	return (
 		<>
-			{userLoggedIn && <Navigate to={"/dashboard"} replace={true} />}
+			{userLoggedIn && <Navigate to={"/login"} replace={true} />}
 			<div className="flex items-center justify-center min-h-screen bg-gray-900">
 				<div className="bg-transparent border border-gray-800 p-10 rounded-xl shadow-xl w-full max-w-xl">
 					<span className="text-center mb-10 flex flex-col gap-2">

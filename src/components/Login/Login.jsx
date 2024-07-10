@@ -1,7 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { useState } from "react";
 import { signInEmailAndPassword, signInWithGoogle } from "../../firebase/auth";
-import { useAuth } from "../../context/authContext/index.jsx";
+import { useAuth } from "../../context/authContext/index";
 
 const Login = () => {
 	const { userLoggedIn } = useAuth();
@@ -18,7 +18,6 @@ const Login = () => {
 			setIsSigningIn(true);
 			await signInEmailAndPassword(email, password);
 			setErrorMessage("Try again")
-			// doSendEmailVerification()
 		}
 	};
 
