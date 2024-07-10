@@ -5,7 +5,7 @@ const Footer = () => {
 				<aside className="grid-flow-col items-center">
 					<img src={icon} className="w-10 border border-white rounded-full p-1 bg-white" />
 					<p className="font-semibold">
-						Copyright © ${new Date().getFullYear()} - All right reserved by NewsNow AI
+						Copyright © ${new Date().getFullYear()} - All right reserved by ChatBuddy AI
 					</p>
 				</aside>
 			</footer>

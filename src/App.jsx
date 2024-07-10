@@ -5,9 +5,10 @@ import {
 	useLocation,
 } from "react-router-dom";
 import Header from "./components/Header";
-import SignUp from "./SignUp";
+import SignUp from "./components/SignUp/SignUp";
 import Footer from "./components/Footer";
-import Login from "./Login";
+import Login from "./components/Login/Login";
+// import Dashboard from "./components/Dashboard/Dashboard";
 
 const MainContent = () => {
 	const location = useLocation();
@@ -19,6 +20,7 @@ const MainContent = () => {
 					<Route path="/" element={<Header />} />
 					<Route path="/get-started" element={<SignUp />} />
 					<Route path="/login" element={<Login />} />
+					{/* <Route path="/dashboard" element={<Dashboard />} /> */}
 				</Routes>
 			</div>
 			{location.pathname === "/" && <Footer />}

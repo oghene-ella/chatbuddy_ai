@@ -9,14 +9,28 @@ const Header = () => {
     };
 
     return (
-			<div className="hero bg-base-200 h-full">
+			<div className="hero bg-gray-900 h-full">
 				<div className="hero-content flex-col-reverse md:flex-col lg:flex-row p-10 gap-10">
 					<div className="text-center md:text-start">
-						<h1 className="text-5xl font-bold">NewsNow AI!</h1>
+						<h1 className="text-5xl font-bold">
+							Chat<b className="text-info">Buddy</b> AI!
+						</h1>
 						<p className="py-6">
-							By leveraging the power of Alan AI, this application curates and
-							delivers personalized news content from various sources, ensuring
-							that users receive the most relevant and timely information.
+							ChatBuddy AI is a friendly and interactive chat application built
+							with React JS, powered by Meta innovative Llama 3 family of
+							large language models (LLMs). The application is optimized for
+							helpfulness and safety, ensuring that users receive relevant and
+							accurate information in a secure environment. Whether you are
+							looking for a virtual assistant, customer support, or just a
+							friendly conversation, ChatBuddy AI is here to help.
+							<br />
+							<br />
+							With its ability to generate text and code based on user input,
+							ChatBuddy AI demonstrates the power and versatility of modern AI
+							technology. This project highlights the practical integration of
+							advanced language models in a user-friendly web application,
+							showcasing the potential of Llama 3 in creating meaningful and
+							dynamic interactions.
 						</p>
 						<button className="btn btn-info" onClick={handleGetStarted}>
 							Get Started
