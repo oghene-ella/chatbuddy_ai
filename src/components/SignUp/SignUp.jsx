@@ -2,26 +2,43 @@ import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/authContext/index";
 import { createEmailandPassword } from "../../firebase/auth";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isRegistering, setIsRegistering] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
+	const [isSignedUp, setIsSignedUp] = useState(false); 
 
 	const { userLoggedIn } = useAuth();
 
 	const onSubmit = async (e) => {
 		e.preventDefault();
-		if (!isRegistering) {
-			setIsRegistering(true);
+		setIsRegistering(true);
+		setErrorMessage(""); 
+
+		try {
 			await createEmailandPassword(email, password);
-			setErrorMessage('Email already registered')
+			setIsSignedUp(true);
+			toast.success("Account Created! Please log in.");
+		} catch (error) {
+			setErrorMessage(
+				"Email already registered or invalid details. Please try again.",
+			);
+			toast.error("Details already registered, try again");
+		} finally {
+			setIsRegistering(false);
 		}
 	};
+
+	if (isSignedUp) {
+		return <Navigate to="/login" replace={true} />;
+	}
+
 	return (
 		<>
-			{userLoggedIn && <Navigate to={"/login"} replace={true} />}
+			{userLoggedIn && <Navigate to="/login" replace={true} />}
 			<div className="flex items-center justify-center min-h-screen bg-gray-900">
 				<div className="bg-transparent border border-gray-800 p-10 rounded-xl shadow-xl w-full max-w-xl">
 					<span className="text-center mb-10 flex flex-col gap-2">
@@ -79,12 +96,14 @@ const SignUp = () => {
 							/>
 						</div>
 						{errorMessage && (
-							<span className="text-red-600 font-bold">{errorMessage}</span>
+							<span className="text-red-500 font-medium text-sm">
+								{errorMessage}
+							</span>
 						)}
 						<button
 							type="submit"
 							disabled={isRegistering}
-							className={`btn btn-info font-semibold w-full ${
+							className={`btn btn-info font-semibold w-full mt-2 ${
 								isRegistering
 									? "bg-gray-300 cursor-not-allowed"
 									: "bg-info hover:bg-black hover:text-white hover:shadow-xl transition duration-300"

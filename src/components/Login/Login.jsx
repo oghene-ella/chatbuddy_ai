@@ -2,6 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useState } from "react";
 import { signInEmailAndPassword, signInWithGoogle } from "../../firebase/auth";
 import { useAuth } from "../../context/authContext/index";
+import { toast } from "react-toastify";
 
 const Login = () => {
 	const { userLoggedIn } = useAuth();
@@ -14,21 +15,33 @@ const Login = () => {
 
 	const onSubmit = async (e) => {
 		e.preventDefault();
-		if (!isSigningIn) {
-			setIsSigningIn(true);
+		setIsSigningIn(true);
+		setErrorMessage("");
+
+		try {
 			await signInEmailAndPassword(email, password);
-			setErrorMessage("Try again")
+			toast.success("Logged in.");
+		} catch (error) {
+			setErrorMessage("Invalid login details. Please try again.");
+			toast.error("Invalid Login details");
+		} finally {
+			setIsSigningIn(false);
 		}
 	};
 
-	const onGoogleSignIn = (e) => {
+	const onGoogleSignIn = async (e) => {
 		e.preventDefault();
-		if (!isSigningIn) {
-			setIsSigningIn(true);
-			signInWithGoogle().catch((err) => {
-				setIsSigningIn(false);
-				console.log(err)
-			});
+		setIsSigningIn(true);
+		setErrorMessage("");
+
+		try {
+			await signInWithGoogle();
+			toast.success("Google sign-in successful.");
+		} catch (error) {
+			setErrorMessage("Google sign-in failed. Please try again.");
+			toast.error("Google sign-in failed");
+		} finally {
+			setIsSigningIn(false);
 		}
 	};
 
@@ -79,12 +92,12 @@ const Login = () => {
 						/>
 					</div>
 					{errorMessage && (
-						<span className="text-red-600 font-bold">{errorMessage}</span>
+						<span className="text-red-500 text-sm font-medium">{errorMessage}</span>
 					)}
 					<button
 						type="submit"
 						disabled={isSigningIn}
-						className={`btn btn-info font-semibold w-full ${
+						className={`btn btn-info font-semibold w-full mt-2 ${
 							isSigningIn
 								? "bg-gray-300 cursor-not-allowed"
 								: "bg-info hover:bg-black hover:text-white hover:shadow-xl transition duration-300"

@@ -10,12 +10,15 @@ import Footer from "./components/Footer";
 import Login from "./components/Login/Login";
 import Dashboard from "./components/Dashboard/Dashboard";
 import ProtectedRoute from "./context/ProtectedRoute";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const MainContent = () => {
 	const location = useLocation();
 
 	return (
 		<div className="flex flex-col h-screen">
+			<ToastContainer />
 			<div className="flex-grow">
 				<Routes>
 					<Route path="/" element={<Header />} />

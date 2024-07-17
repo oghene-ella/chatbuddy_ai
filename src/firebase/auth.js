@@ -8,7 +8,13 @@ import {
 } from "firebase/auth";
 
 export const createEmailandPassword = async (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+    );
+    await signOut(auth);
+    return userCredential;
 }
 
 export const signInEmailAndPassword = async (email, password) => {
