@@ -87,7 +87,7 @@ const Login = () => {
 						className={`btn btn-info font-semibold w-full ${
 							isSigningIn
 								? "bg-gray-300 cursor-not-allowed"
-								: "bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300"
+								: "bg-info hover:bg-black hover:text-white hover:shadow-xl transition duration-300"
 						}`}
 					>
 						{isSigningIn ? "Signing In..." : "Log In"}
