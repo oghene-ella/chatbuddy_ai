@@ -124,7 +124,7 @@ const Login = () => {
 					className={`w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg text-sm font-medium mt-5 ${
 						isSigningIn
 							? "cursor-not-allowed"
-							: "hover:bg-gray-100 transition duration-300 active:bg-gray-100"
+							: "hover:bg-gray-100 transition duration-300 active:bg-gray-100 hover:text-black"
 					}`}
 				>
 					<svg
