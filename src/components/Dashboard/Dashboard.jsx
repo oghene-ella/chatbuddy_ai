@@ -74,7 +74,8 @@ const Dashboard = () => {
 					{ inputs: input },
 					{
 						headers: {
-							Authorization: `Bearer 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`,
+							Authorization: `Bearer ${import.meta.env.VITE_BEARER_TOKEN} `,
+							"Content-Type": "application/json",
 						},
 					},
 				);
@@ -113,14 +114,17 @@ const Dashboard = () => {
 					{ inputs: input },
 					{
 						headers: {
-							Authorization: `Bearer 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`,
+							Authorization: `Bearer ${import.meta.env.VITE_BEARER_TOKEN}`,
+							"Content-Type": "application/json",
 						},
 					},
 				);
 				const assistantMessage = {
 					role: "assistant",
-					content: response.data.generated_text,
+					content: response.data[0].generated_text,
 				};
+				console.log(assistantMessage)
+
 				updatedChat.messages.push(assistantMessage);
 				setChatSessions((prevSessions) =>
 					prevSessions.map((chat) =>
