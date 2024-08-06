@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Logout from "./Logout";
 import { useAuth } from "../../context/authContext";
-import { FaBars, FaTimes, FaPlus, FaPaperPlane } from "react-icons/fa"; 
+import axios from "axios";
+import { FaBars, FaTimes, FaPlus, FaPaperPlane } from "react-icons/fa";
+import { db } from "../../firebase/config";
+import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
 	const { currentUser } = useAuth();
@@ -10,49 +13,124 @@ const Dashboard = () => {
 	const [activeChatId, setActiveChatId] = useState(null);
 	const [sidebarOpen, setSidebarOpen] = useState(true);
 
+	useEffect(() => {
+		const loadChatSessions = async () => {
+			try {
+				const userChatsRef = collection(
+					db,
+					"users",
+					currentUser.uid,
+					"chatSessions",
+				);
+				const snapshot = await getDocs(userChatsRef);
+				const loadedChatSessions = snapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				setChatSessions(loadedChatSessions);
+			} catch (error) {
+				console.error("Error loading chat sessions: ", error);
+			}
+		};
+
+		loadChatSessions();
+	}, [currentUser.uid]);
+
+	const saveChatSession = async (chatId, chatData) => {
+		try {
+			// Ensure no undefined values are being set
+			const sanitizedData = JSON.parse(JSON.stringify(chatData)); // Convert to JSON and back to remove undefined
+			const userChatRef = doc(
+				db,
+				"users",
+				currentUser.uid,
+				"chatSessions",
+				chatId,
+			);
+			await setDoc(userChatRef, sanitizedData);
+		} catch (error) {
+			console.error("Error saving chat session: ", error);
+		}
+	};
+
+
 	const handleSend = async () => {
 		if (input.trim() === "") return;
 
 		let newChatId = activeChatId;
 		if (activeChatId === null) {
-			newChatId = chatSessions.length + 1;
+			newChatId = (chatSessions.length + 1).toString();
 			const newChat = {
-				id: newChatId,
 				name: input.split(" ").slice(0, 3).join(" "),
 				messages: [{ role: "user", content: input }],
 			};
-			setChatSessions([...chatSessions, newChat]);
+			setChatSessions([...chatSessions, { id: newChatId, ...newChat }]);
 			setActiveChatId(newChatId);
+			await saveChatSession(newChatId, newChat);
 
-			
-			const mockApiResponse = "This is a mock response from the AI.";
-			const assistantMessage = { role: "assistant", content: mockApiResponse };
-			setChatSessions((prevSessions) =>
-				prevSessions.map((chat) =>
-					chat.id === newChatId
-						? { ...chat, messages: [...chat.messages, assistantMessage] }
-						: chat,
-				),
-			);
+			try {
+				const response = await axios.post(
+					"https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct",
+					{ inputs: input },
+					{
+						headers: {
+							Authorization: `Bearer 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`,
+						},
+					},
+				);
+				const assistantMessage = {
+					role: "assistant",
+					content: response.data.generated_text,
+				};
+				const updatedChat = {
+					...newChat,
+					messages: [...newChat.messages, assistantMessage],
+				};
+				setChatSessions((prevSessions) =>
+					prevSessions.map((chat) =>
+						chat.id === newChatId
+							? { ...chat, messages: updatedChat.messages }
+							: chat,
+					),
+				);
+				await saveChatSession(newChatId, updatedChat);
+			} catch (error) {
+				console.error("Error fetching AI response: ", error);
+			}
 		} else {
 			const userMessage = { role: "user", content: input };
+			const updatedChat = chatSessions.find((chat) => chat.id === activeChatId);
+			updatedChat.messages.push(userMessage);
 			setChatSessions((prevSessions) =>
 				prevSessions.map((chat) =>
-					chat.id === activeChatId
-						? { ...chat, messages: [...chat.messages, userMessage] }
-						: chat,
+					chat.id === activeChatId ? updatedChat : chat,
 				),
 			);
 
-			const mockApiResponse = "This is a mock response from the AI.";
-			const assistantMessage = { role: "assistant", content: mockApiResponse };
-			setChatSessions((prevSessions) =>
-				prevSessions.map((chat) =>
-					chat.id === activeChatId
-						? { ...chat, messages: [...chat.messages, assistantMessage] }
-						: chat,
-				),
-			);
+			try {
+				const response = await axios.post(
+					"https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct",
+					{ inputs: input },
+					{
+						headers: {
+							Authorization: `Bearer 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`,
+						},
+					},
+				);
+				const assistantMessage = {
+					role: "assistant",
+					content: response.data.generated_text,
+				};
+				updatedChat.messages.push(assistantMessage);
+				setChatSessions((prevSessions) =>
+					prevSessions.map((chat) =>
+						chat.id === activeChatId ? updatedChat : chat,
+					),
+				);
+				await saveChatSession(activeChatId, updatedChat);
+			} catch (error) {
+				console.error("Error fetching AI response: ", error);
+			}
 		}
 
 		setInput("");
@@ -156,7 +234,7 @@ const Dashboard = () => {
 							</div>
 						))}
 				</div>
-				<div className="mt-4 flex gap-4 justify-center items-center  bg-slate-900 rounded-xl pr-5">
+				<div className="mt-4 flex gap-4 justify-center items-center bg-slate-900 rounded-xl pr-5">
 					<textarea
 						className="w-full p-2 rounded-l-md bg-transparent ml-3"
 						rows="2"
@@ -167,7 +245,7 @@ const Dashboard = () => {
 					></textarea>
 					<button
 						onClick={handleSend}
-						className="w-fit h-fit  bg-blue-500 text-white p-4 rounded-full hover:bg-blue-600 flex items-center justify-center"
+						className="w-fit h-fit bg-blue-500 text-white p-4 rounded-full hover:bg-blue-600 flex items-center justify-center"
 					>
 						<FaPaperPlane size={16} />
 					</button>
