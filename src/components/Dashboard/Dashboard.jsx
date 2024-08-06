@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import Logout from "./Logout";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
-import { FaBars, FaTimes, FaPlus, FaPaperPlane } from "react-icons/fa";
+import {
+	FaBars,
+	FaTimes,
+	FaPlus,
+	FaPaperPlane,
+	FaCopy,
+} from "react-icons/fa";
 import { db } from "../../firebase/config";
 import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 
@@ -36,6 +42,7 @@ const Dashboard = () => {
 		loadChatSessions();
 	}, [currentUser.uid]);
 
+
 	const saveChatSession = async (chatId, chatData) => {
 		try {
 			// Ensure no undefined values are being set
@@ -53,6 +60,27 @@ const Dashboard = () => {
 		}
 	};
 
+	const formatCodeResponse = (responseText) => {
+		if (typeof responseText !== "string") {
+			console.error("Invalid response format:", responseText);
+			return { formattedResponse: "", codeBlocks: [] };
+		}
+
+		// Regular expression to identify code blocks
+		const codeBlockRegex = /```[\s\S]*?```/g;
+		// Remove the question part from the response
+		const cleanedResponse = responseText.replace(/^(.*\?)\s*/, "");
+		// Extract code blocks if any
+		const codeBlocks = cleanedResponse.match(codeBlockRegex) || [];
+		// Format the response, ensuring code blocks are properly styled
+		const formattedResponse = cleanedResponse.replace(
+			codeBlockRegex,
+			(match) => {
+				return `<pre><code>${match.replace(/```/g, "")}</code></pre>`;
+			},
+		);
+		return { formattedResponse, codeBlocks };
+	};
 
 	const handleSend = async () => {
 		if (input.trim() === "") return;
@@ -79,9 +107,21 @@ const Dashboard = () => {
 						},
 					},
 				);
+
+				if (
+					!response.data[0].generated_text ||
+					typeof response.data[0].generated_text !== "string"
+				) {
+					throw new Error("Invalid API response data");
+				}
+
+				const { formattedResponse } = formatCodeResponse(
+					response.data[0].generated_text
+				);
+
 				const assistantMessage = {
 					role: "assistant",
-					content: response.data.generated_text,
+					content: formattedResponse,
 				};
 				const updatedChat = {
 					...newChat,
@@ -98,6 +138,7 @@ const Dashboard = () => {
 			} catch (error) {
 				console.error("Error fetching AI response: ", error);
 			}
+
 		} else {
 			const userMessage = { role: "user", content: input };
 			const updatedChat = chatSessions.find((chat) => chat.id === activeChatId);
@@ -138,6 +179,17 @@ const Dashboard = () => {
 		}
 
 		setInput("");
+	};
+
+	const copyToClipboard = (text) => {
+		navigator.clipboard
+			.writeText(text)
+			.then(() => {
+				alert("Copied to clipboard!");
+			})
+			.catch((err) => {
+				console.error("Failed to copy text:", err);
+			});
 	};
 
 	const handleKeyDown = (e) => {
@@ -205,9 +257,7 @@ const Dashboard = () => {
 				}`}
 			>
 				<div className="flex justify-between items-center mb-4">
-					<h2 className="text-2xl font-bold text-gray-800">
-						Chat with ChatBuddy AI
-					</h2>
+					<h2 className="text-2xl font-bold text-gray-800">ChatBuddy AI</h2>
 					<div className="flex items-center">
 						<p className="text-gray-600 mr-4">
 							{currentUser.displayName
@@ -227,17 +277,29 @@ const Dashboard = () => {
 								}`}
 							>
 								<div
-									className={`inline-block p-2 rounded-md ${
+									className={`p-2 rounded-md flex items-end gap-3 ${
 										msg.role === "user"
 											? "bg-blue-500 text-white"
 											: "bg-gray-200 text-gray-900"
 									}`}
 								>
 									{msg.content}
+									{msg.role === "assistant" && (
+										<div className="flex gap-2 items-center">
+											<button
+												onClick={() => copyToClipboard(msg.content)}
+												className="ml-2 text-blue-500 hover:text-blue-700"
+											>
+												<FaCopy size={14} />
+											</button>
+										
+										</div>
+									)}
 								</div>
 							</div>
 						))}
 				</div>
+
 				<div className="mt-4 flex gap-4 justify-center items-center bg-slate-900 rounded-xl pr-5">
 					<textarea
 						className="w-full p-2 rounded-l-md bg-transparent ml-3"
